@@ -1,0 +1,95 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <set>
+#include <map>
+#include <stack>
+#include <cmath>
+#include <iomanip>
+#include <string>
+
+using namespace std;
+
+int main() {
+	int N, count = 1, a, letter;
+	//vector of segments
+	cin >> N;
+	vector <pair<int,int>> segm;
+	cin >> letter;
+	for (int i = 0; i < N - 1; i++){
+		cin >> a;
+		if (a == letter) count++;
+		else {
+			pair<int, int> segm_temp;
+			segm_temp.first = count;
+			segm_temp.second = letter;
+			segm.push_back(segm_temp);
+			count = 1;
+			letter = a;
+		}
+	}
+	pair<int, int> segm_temp;
+	segm_temp.first = count;
+	segm_temp.second = a;
+	segm.push_back(segm_temp);
+
+	//vector of neighbors
+	vector <pair<int, int>> neib(segm.size());
+	for (int i = 1; i < segm.size() - 1; i++){
+		neib[i].first = i - 1;
+		neib[i].second = i + 1;
+	}
+	neib[0].first = -1;
+	neib[0].second = 1;
+	neib[segm.size() - 1].second = segm.size();
+	neib[segm.size() - 1].first = segm.size() - 2;
+	//for (auto now : neib) cout << now.first << " " << now.second << endl;
+	//reverse
+	reverse(segm.begin(), segm.end());
+	//multiset
+	multiset <pair <int, int>> maxset;
+	for (int i = 0; i < segm.size(); i++){
+		pair<int, int> segm_temp;
+		segm_temp.first = segm[i].first;
+		segm_temp.second = i;
+		maxset.insert(segm_temp);
+	}
+	
+	int shag = 1;
+	while (maxset.size() > 1){
+		int i_temp;
+		shag++;
+		i_temp = maxset.rbegin()->second;
+		maxset.erase(*maxset.rbegin());
+		if (neib[i_temp].first == -1){
+			neib[neib[i_temp].second].first = -1;
+		}
+		else if (neib[i_temp].second == segm.size()){
+			neib[neib[i_temp].first].second = segm.size();
+		}
+		else if (segm[neib[i_temp].first].second == segm[neib[i_temp].second].second){
+			
+			neib[neib[i_temp].first].second = neib[neib[i_temp].second].second;
+			if (neib[neib[i_temp].second].second != segm.size()) neib[neib[neib[i_temp].second].second].first = neib[i_temp].first;
+			
+			pair<int, int> segm_temp;
+			segm_temp.first = segm[neib[i_temp].first].first;
+			segm_temp.second = neib[i_temp].first;
+			segm[neib[i_temp].first].first += segm[neib[i_temp].second].first;
+			
+			maxset.erase(segm_temp);
+			segm_temp.first = segm[neib[i_temp].second].first;
+			segm_temp.second = neib[i_temp].second;
+			maxset.erase(segm_temp);
+			
+			segm_temp.first = segm[neib[i_temp].first].first;
+			segm_temp.second = neib[i_temp].first;
+			maxset.insert(segm_temp);
+		}
+		else{
+			neib[neib[i_temp].first].second = neib[i_temp].second;
+			neib[neib[i_temp].second].first = neib[i_temp].first;
+		}
+	}
+	cout << shag;
+}
